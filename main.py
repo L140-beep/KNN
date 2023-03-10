@@ -79,8 +79,18 @@ def isTwoPartLetter(prev_region, current_region) -> bool:
     diff = current_region.centroid[1] - prev_region.centroid[1]
     return diff < 10
 
-def concatenateRegions(region1, region2):
-    pass
+def concatenateRegions(prev_region, region, source):
+    min_y1, min_x1, max_y1, max_x1 = prev_region.bbox
+
+    min_y2, min_x2, max_y2, max_x2 = region.bbox
+
+    max_y = max(max_y1, max_y2)
+    min_y = min(min_y1, min_y2)
+
+    max_x = max(max_x1, max_x2)
+    min_x = min(min_x1, min_x2)
+    
+    return source[min_y:max_y, min_x:max_x]
 
 def image_to_text(image) -> str:
     gray = np.mean(image, 2)
@@ -93,12 +103,11 @@ def image_to_text(image) -> str:
     prev_region = -1
     
     for region in regions:
-        image = region.image
+        img = region.image
         if prev_region != -1:
             if isTwoPartLetter(prev_region, region):
-                print("Its two part letter!!")
-        
-        features = extract_features(image, FLAG.NDIM2).reshape(1, -1)
+                img = concatenateRegions(prev_region, region, gray)    
+        features = extract_features(img, FLAG.NDIM2).reshape(1, -1)
         ret, results, neighbours, dist = knn.findNearest(features, 5)
         answer.append(class2sym[int(ret)])
         prev_region = region
