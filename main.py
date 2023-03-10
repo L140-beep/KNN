@@ -102,15 +102,43 @@ def image_to_text(image) -> str:
     
     prev_region = -1
     
-    for region in regions:
+    i = 0
+    
+    while i < len(regions):
+        region = regions[min(i, len(regions) - 1)]
+        next_region = regions[min(i + 1, len(regions) - 1)]
+        
         img = region.image
+        
         if prev_region != -1:
             if isTwoPartLetter(prev_region, region):
-                img = concatenateRegions(prev_region, region, gray)    
+                img = concatenateRegions(prev_region, region, gray)
+
+        if isTwoPartLetter(region, next_region):
+            img = concatenateRegions(region, next_region, gray)
+            i += 1
+        
+        
         features = extract_features(img, FLAG.NDIM2).reshape(1, -1)
         ret, results, neighbours, dist = knn.findNearest(features, 5)
         answer.append(class2sym[int(ret)])
         prev_region = region
+        i += 1
+                
+        
+    # for region in regions:
+    #     img = region.image
+    #     if prev_region != -1:
+    #         if isTwoPartLetter(prev_region, region):
+    #             img = concatenateRegions(prev_region, region, gray)
+    #         else:
+    #             img
+    #     if isTwoPartLetter(prev_region, region):
+    #         continue    
+    #     features = extract_features(img, FLAG.NDIM2).reshape(1, -1)
+    #     ret, results, neighbours, dist = knn.findNearest(features, 5)
+    #     answer.append(class2sym[int(ret)])
+    #     prev_region = region
     return "".join(answer)
     
 
