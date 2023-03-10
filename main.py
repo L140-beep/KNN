@@ -75,6 +75,13 @@ responses = np.array(responses).reshape(-1, 1).astype("f4")
 
 knn.train(train, cv2.ml.ROW_SAMPLE, responses)
 
+def isTwoPartLetter(prev_region, current_region) -> bool:
+    diff = current_region.centroid[1] - prev_region.centroid[1]
+    return diff < 10
+
+def concatenateRegions(region1, region2):
+    pass
+
 def image_to_text(image) -> str:
     gray = np.mean(image, 2)
     gray[gray > 0] = 1
@@ -83,11 +90,18 @@ def image_to_text(image) -> str:
     regions = sorted(regions, key= lambda region : region.centroid[1])
     answer = []
     
+    prev_region = -1
+    
     for region in regions:
-        features = extract_features(region.image, FLAG.NDIM2).reshape(1, -1)
+        image = region.image
+        if prev_region != -1:
+            if isTwoPartLetter(prev_region, region):
+                print("Its two part letter!!")
+        
+        features = extract_features(image, FLAG.NDIM2).reshape(1, -1)
         ret, results, neighbours, dist = knn.findNearest(features, 5)
         answer.append(class2sym[int(ret)])
-    
+        prev_region = region
     return "".join(answer)
     
 

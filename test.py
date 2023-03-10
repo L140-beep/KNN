@@ -2,7 +2,7 @@ import cv2
 import numpy as np 
 import matplotlib.pyplot as plt
 from skimage.measure import label, regionprops
-image = plt.imread('out/0.png')
+image = plt.imread('out/1.png')
 
 gray = np.mean(image, 2)
 gray[gray > 0] = 1
