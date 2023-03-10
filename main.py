@@ -92,6 +92,16 @@ def concatenateRegions(prev_region, region, source):
     
     return source[min_y:max_y, min_x:max_x]
 
+SPACE_DISTANCE = 35
+
+def isEndOfWord(current_region, next_region) -> bool:
+    min_y1, min_x1, max_y1, max_x1 = current_region.bbox
+    min_y2, min_x2, max_y2, max_x2 = next_region.bbox
+    
+    diff = min_x2 - max_x1
+    
+    return diff > SPACE_DISTANCE
+    
 def image_to_text(image) -> str:
     gray = np.mean(image, 2)
     gray[gray > 0] = 1
@@ -118,27 +128,16 @@ def image_to_text(image) -> str:
             img = concatenateRegions(region, next_region, gray)
             i += 1
         
-        
         features = extract_features(img, FLAG.NDIM2).reshape(1, -1)
         ret, results, neighbours, dist = knn.findNearest(features, 5)
         answer.append(class2sym[int(ret)])
+        
+        if isEndOfWord(region, next_region):
+            answer.append(' ')
+        
         prev_region = region
         i += 1
                 
-        
-    # for region in regions:
-    #     img = region.image
-    #     if prev_region != -1:
-    #         if isTwoPartLetter(prev_region, region):
-    #             img = concatenateRegions(prev_region, region, gray)
-    #         else:
-    #             img
-    #     if isTwoPartLetter(prev_region, region):
-    #         continue    
-    #     features = extract_features(img, FLAG.NDIM2).reshape(1, -1)
-    #     ret, results, neighbours, dist = knn.findNearest(features, 5)
-    #     answer.append(class2sym[int(ret)])
-    #     prev_region = region
     return "".join(answer)
     
 
